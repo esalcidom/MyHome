@@ -32,4 +32,6 @@ public interface HouseMemberMapper {
 
   Set<AddHouseMemberResponse.HouseMember> houseMemberSetToRestApiResponseAddHouseMemberSet(
       Set<HouseMember> houseMemberSet);
+
+  //TODO: need to add a mapper for page of members to response
 }

@@ -19,11 +19,22 @@ package com.myhome.repositories;
 import com.myhome.domain.HouseMember;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 public interface HouseMemberRepository extends CrudRepository<HouseMember, Long> {
   Optional<HouseMember> findByMemberId(String memberId);
 
   List<HouseMember> findAllByCommunityHouse_HouseId(String houseId, Pageable pageable);
+
+  @Query("SELECT m " +
+          "FROM HOUSE_MEMBER AS m " +
+          "JOIN m.communityHouse ch " +
+          "JOIN ch.community c " +
+          "JOIN c.admins u " +
+          "WHERE u.userId = ?1")
+  Optional<Page<HouseMember>> findAllMembersByUser(String userId, Pageable pageable);
 }
