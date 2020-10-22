@@ -31,7 +31,7 @@ public interface HouseMemberRepository extends CrudRepository<HouseMember, Long>
   List<HouseMember> findAllByCommunityHouse_HouseId(String houseId, Pageable pageable);
 
   @Query("SELECT m " +
-          "FROM HOUSE_MEMBER AS m " +
+          "FROM HouseMember AS m " +
           "JOIN m.communityHouse ch " +
           "JOIN ch.community c " +
           "JOIN c.admins u " +
