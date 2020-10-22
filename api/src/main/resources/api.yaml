@@ -1,818 +1,794 @@
 openapi: 3.0.2
 servers:
-  - url: /v3
+  - url: http://localhost:8080/
 info:
-  description: |-
-    This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about
-    Swagger at [http://swagger.io](http://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!
-    You can now help us improve the API whether it's by making changes to the definition itself or to the code.
-    That way, with time, we can improve the API in general, and expose some of the new features in OAS3.
-    Some useful links:
-    - [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)
-    - [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)
-  version: 1.0.6-SNAPSHOT
-  title: Swagger Petstore - OpenAPI 3.0
-  termsOfService: 'http://swagger.io/terms/'
-  contact:
-    email: apiteam@swagger.io
-  license:
-    name: Apache 2.0
-    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+  description: This is a OpenApi specification for MyHome backend service.
+  version: 2.0.0
+  title: Swagger MyHome - OpenAPI 3.0
 tags:
-  - name: pet
-    description: Everything about your Pets
-    externalDocs:
-      description: Find out more
-      url: 'http://swagger.io'
-  - name: store
-    description: Operations about user
-  - name: user
-    description: Access to Petstore orders
-    externalDocs:
-      description: Find out more about our store
-      url: 'http://swagger.io'
+  - name: Users
+  - name: Documents
+  - name: Communities
+  - name: Houses
 paths:
-  /pet:
+  /users:
     post:
       tags:
-        - pet
-      summary: Add a new pet to the store
-      description: Add a new pet to the store
-      operationId: addPet
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Pet'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pet'
-        '405':
-          description: Invalid input
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
+        - Users
+      description: "Create a new user"
+      operationId: signUp
       requestBody:
-        description: Create a new pet in the store
+        description: CreateUserRequest aggregate fields
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Pet'
+              $ref: '#/components/schemas/CreateUserRequest'
           application/xml:
             schema:
-              $ref: '#/components/schemas/Pet'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Pet'
-    put:
-      tags:
-        - pet
-      summary: Update an existing pet
-      description: Update an existing pet by Id
-      operationId: updatePet
+              $ref: '#/components/schemas/CreateUserRequest'
       responses:
-        '200':
-          description: Successful operation
+        '201':
+          description: "if user created"
           content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Pet'
             application/json:
               schema:
-                $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid ID supplied
+                $ref: '#/components/schemas/CreateUserResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CreateUserResponse'
+        '409':
+          description: "if user already exists"
+    get:
+      tags:
+        - Users
+      description: "Lists all users"
+      operationId: listAllUsers
+      parameters:
+        - in: query
+          name: pageable
+          required: false
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: "Returns list of users"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserDetailsResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetUserDetailsResponse'
+  /users/{userId}:
+    get:
+      tags:
+        - Users
+      description: "Get details of a user given userId"
+      operationId: getUserDetails
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID of the user to get
+      responses:
+        '200':
+          description: "If userId is valid. Response body has the details"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserDetailsResponseUser'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetUserDetailsResponseUser'
         '404':
-          description: Pet not found
-        '405':
-          description: Validation exception
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
+          description: "If userId is invalid"
+  /members/{memberId}/documents:
+    get:
+      tags:
+        - Documents
+      description: Returns house member's documents
+      operationId: getHouseMemberDocument
+      parameters:
+        - in: path
+          name: memberId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: if document present
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: byte
+        '404':
+          description: if params are invalid
+    post:
+      tags:
+        - Documents
+      description: Add house member's documents
+      operationId: uploadHouseMemberDocument
+      parameters:
+        - in: path
+          name: memberId
+          schema:
+            type: string
+          required: true
       requestBody:
-        description: Update an existent pet in the store
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                memberDocument:
+                  type: string
+                  format: binary
+      responses:
+        '204':
+          description: if document saved
+        '409':
+          description: if document save error
+        '413':
+          description: if document file too large
+        '404':
+          description: if params are invalid
+    put:
+      tags:
+        - Documents
+      description: Update house member's documents
+      operationId: updateHouseMemberDocument
+      parameters:
+        - in: path
+          name: memberId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                memberDocument:
+                  type: string
+                  format: binary
+      responses:
+        '204':
+          description: if document updated
+        '409':
+          description: if document update error
+        '413':
+          description: if document file too large
+        '404':
+          description: if params are invalid
+    delete:
+      tags:
+        - Documents
+      description: Delete house member's documents
+      operationId: deleteHouseMemberDocument
+      parameters:
+        - in: path
+          name: memberId
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: if document deleted
+        '404':
+          description: if params are invalid
+  /communities:
+    post:
+      tags:
+        - Communities
+      description: Create a new community
+      operationId: createCommunity
+      requestBody:
+        description: CreateCommunityRequest aggregate fields
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Pet'
+              $ref: '#/components/schemas/CreateCommunityRequest'
           application/xml:
             schema:
-              $ref: '#/components/schemas/Pet'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Pet'
-  /pet/findByStatus:
+              $ref: '#/components/schemas/CreateCommunityRequest'
+      responses:
+        '201':
+          description: if community was created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateCommunityResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CreateCommunityResponse'
     get:
       tags:
-        - pet
-      summary: Finds Pets by status
-      description: Multiple status values can be provided with comma separated strings
-      operationId: findPetsByStatus
+        - Communities
+      description: List all communities which are registered
+      operationId: listAllCommunity
       parameters:
-        - name: status
-          in: query
-          description: Status values that need to be considered for filter
+        - in: query
+          name: pageable
           required: false
-          explode: true
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: Returns list of communities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCommunityDetailsResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetCommunityDetailsResponse'
+  /communities/{communityId}:
+    get:
+      tags:
+        - Communities
+      description: Get details about the community given a community id
+      operationId: listCommunityDetails
+      parameters:
+        - in: path
+          name: communityId
           schema:
             type: string
-            enum:
-              - available
-              - pending
-              - sold
-            default: available
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid status value
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
-  /pet/findByTags:
-    get:
-      tags:
-        - pet
-      summary: Finds Pets by tags
-      description: >-
-        Multiple tags can be provided with comma separated strings. Use tag1,
-        tag2, tag3 for testing.
-      operationId: findPetsByTags
-      parameters:
-        - name: tags
-          in: query
-          description: Tags to filter by
-          required: false
-          explode: true
-          schema:
-            type: array
-            items:
-              type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid tag value
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
-  '/pet/{petId}':
-    get:
-      tags:
-        - pet
-      summary: Find pet by ID
-      description: Returns a single pet
-      operationId: getPetById
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet to return
           required: true
-          schema:
-            type: integer
-            format: int64
       responses:
         '200':
-          description: successful operation
+          description: if community exists
           content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Pet'
             application/json:
               schema:
-                $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid ID supplied
+                $ref: '#/components/schemas/GetCommunityDetailsResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetCommunityDetailsResponse'
         '404':
-          description: Pet not found
-      security:
-        - api_key: []
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
-    post:
-      tags:
-        - pet
-      summary: Updates a pet in the store with form data
-      description: ''
-      operationId: updatePetWithForm
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet that needs to be updated
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: name
-          in: query
-          description: Name of pet that needs to be updated
-          schema:
-            type: string
-        - name: status
-          in: query
-          description: Status of pet that needs to be updated
-          schema:
-            type: string
-      responses:
-        '405':
-          description: Invalid input
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
+          description: if params are invalid
     delete:
       tags:
-        - pet
-      summary: Deletes a pet
-      description: ''
-      operationId: deletePet
+        - Communities
+      description: Deletion community with given community id
+      operationId: deleteCommunity
       parameters:
-        - name: api_key
-          in: header
-          description: ''
-          required: false
+        - in: path
+          name: communityId
           schema:
             type: string
-        - name: petId
-          in: path
-          description: Pet id to delete
           required: true
-          schema:
-            type: integer
-            format: int64
       responses:
-        '400':
-          description: Invalid pet value
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
-  '/pet/{petId}/uploadImage':
-    post:
-      tags:
-        - pet
-      summary: uploads an image
-      description: ''
-      operationId: uploadFile
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet to update
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: additionalMetadata
-          in: query
-          description: Additional Metadata
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
-      requestBody:
-        content:
-          application/octet-stream:
-            schema:
-              type: string
-              format: binary
-  /store/inventory:
+        '204':
+          description: if community was removed
+        '404':
+          description: if params are invalid
+  /communities/{communityId}/admins:
     get:
       tags:
-        - store
-      summary: Returns pet inventories by status
-      description: Returns a map of status codes to quantities
-      operationId: getInventory
-      x-swagger-router-controller: OrderController
+        - Communities
+      description: List all admins of the community given a community id
+      operationId: listCommunityAdmins
+      parameters:
+        - in: path
+          name: communityId
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: pageable
+          required: false
+          schema:
+            $ref: '#/components/schemas/Pageable'
       responses:
         '200':
-          description: successful operation
+          description: if community exists
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties:
-                  type: integer
-                  format: int32
-      security:
-        - api_key: []
-  /store/order:
+                $ref: '#/components/schemas/ListCommunityAdminsResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ListCommunityAdminsResponse'
+        '404':
+          description: if params are invalid
     post:
       tags:
-        - store
-      summary: Place an order for a pet
-      description: Place a new order in the store
-      operationId: placeOrder
-      x-swagger-router-controller: OrderController
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '405':
-          description: Invalid input
+        - Communities
+      description: Add a new admin to the community given a community id
+      operationId: addCommunityAdmins
+      parameters:
+        - in: path
+          name: communityId
+          schema:
+            type: string
+          required: true
       requestBody:
+        description: AddCommunityAdminRequest aggregate fields
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Order'
+              $ref: '#/components/schemas/AddCommunityAdminRequest'
           application/xml:
             schema:
-              $ref: '#/components/schemas/Order'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Order'
-  '/store/order/{orderId}':
-    get:
-      tags:
-        - store
-      summary: Find purchase order by ID
-      x-swagger-router-controller: OrderController
-      description: >-
-        For valid response try integer IDs with value <= 5 or > 10. Other values
-        will generated exceptions
-      operationId: getOrderById
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of order that needs to be fetched
-          required: true
-          schema:
-            type: integer
-            format: int64
+              $ref: '#/components/schemas/AddCommunityAdminRequest'
       responses:
-        '200':
-          description: successful operation
+        '204':
+          description: if admins were created
           content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Order'
             application/json:
               schema:
-                $ref: '#/components/schemas/Order'
-        '400':
-          description: Invalid ID supplied
+                $ref: '#/components/schemas/AddCommunityAdminResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/AddCommunityAdminResponse'
         '404':
-          description: Order not found
+          description: if params are invalid
+  /communities/{communityId}/admins/{adminId}:
     delete:
       tags:
-        - store
-      summary: Delete purchase order by ID
-      x-swagger-router-controller: OrderController
-      description: >-
-        For valid response try integer IDs with value < 1000. Anything above
-        1000 or nonintegers will generate API errors
-      operationId: deleteOrder
+        - Communities
+      description: Remove of admin associated with a community
+      operationId: removeAdminFromCommunity
       parameters:
-        - name: orderId
-          in: path
-          description: ID of the order that needs to be deleted
-          required: true
+        - in: path
+          name: communityId
           schema:
-            type: integer
-            format: int64
+            type: string
+          required: true
+        - in: path
+          name: adminId
+          schema:
+            type: string
+          required: true
       responses:
-        '400':
-          description: Invalid ID supplied
+        '204':
+          description: if admin was removed
         '404':
-          description: Order not found
-  /user:
-    post:
-      tags:
-        - user
-      summary: Create user
-      description: This can only be done by the logged in user.
-      operationId: createUser
-      responses:
-        default:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/User'
-        description: Created user object
-  /user/createWithList:
-    post:
-      tags:
-        - user
-      summary: Creates list of users with given input array
-      description: 'Creates list of users with given input array'
-      x-swagger-router-controller: UserController
-      operationId: createUsersWithListInput
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        default:
-          description: successful operation
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/User'
-  /user/login:
+          description: if params are invalid
+  /communities/{communityId}/houses:
     get:
       tags:
-        - user
-      summary: Logs user into the system
-      description: ''
-      operationId: loginUser
+        - Communities
+      description: List all houses of the community given a community id
+      operationId: listCommunityHouses
       parameters:
-        - name: username
-          in: query
-          description: The user name for login
+        - in: path
+          name: communityId
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: pageable
           required: false
           schema:
-            type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
-          required: false
-          schema:
-            type: string
+            $ref: '#/components/schemas/Pageable'
       responses:
         '200':
-          description: successful operation
-          headers:
-            X-Rate-Limit:
-              description: calls per hour allowed by the user
-              schema:
-                type: integer
-                format: int32
-            X-Expires-After:
-              description: date in UTC when toekn expires
-              schema:
-                type: string
-                format: date-time
+          description: if community exists
           content:
-            application/xml:
-              schema:
-                type: string
             application/json:
               schema:
-                type: string
-        '400':
-          description: Invalid username/password supplied
-  /user/logout:
-    get:
-      tags:
-        - user
-      summary: Logs out current logged in user session
-      description: ''
-      operationId: logoutUser
-      parameters: []
-      responses:
-        default:
-          description: successful operation
-  '/user/{username}':
-    get:
-      tags:
-        - user
-      summary: Get user by user name
-      description: ''
-      operationId: getUserByName
-      parameters:
-        - name: username
-          in: path
-          description: 'The name that needs to be fetched. Use user1 for testing. '
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
+                $ref: '#/components/schemas/GetHouseDetailsResponse'
             application/xml:
               schema:
-                $ref: '#/components/schemas/User'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Invalid username supplied
+                $ref: '#/components/schemas/GetHouseDetailsResponse'
         '404':
-          description: User not found
-    put:
+          description: if params are invalid
+    post:
       tags:
-        - user
-      summary: Update user
-      x-swagger-router-controller: UserController
-      description: This can only be done by the logged in user.
-      operationId: updateUser
+        - Communities
+      description: Add a new house to the community given a community id
+      operationId: addCommunityHouses
       parameters:
-        - name: username
-          in: path
-          description: name that need to be deleted
-          required: true
+        - in: path
+          name: communityId
           schema:
             type: string
-      responses:
-        default:
-          description: successful operation
+          required: true
       requestBody:
-        description: Update an existent user in the store
+        description: AddCommunityHouseRequest aggregate fields
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/AddCommunityHouseRequest'
           application/xml:
             schema:
-              $ref: '#/components/schemas/User'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/AddCommunityHouseRequest'
+      responses:
+        '204':
+          description: if houses were added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddCommunityHouseResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/AddCommunityHouseResponse'
+        '400':
+          description: if params are invalid
+  /communities/{communityId}/houses/{houseId}:
     delete:
       tags:
-        - user
-      summary: Delete user
-      description: This can only be done by the logged in user.
-      operationId: deleteUser
+        - Communities
+      description: Remove of house from the community given a community id and a house id
+      operationId: removeCommunityHouse
       parameters:
-        - name: username
-          in: path
-          description: The name that needs to be deleted
-          required: true
+        - in: path
+          name: communityId
           schema:
             type: string
+          required: true
+        - in: path
+          name: houseId
+          schema:
+            type: string
+          required: true
       responses:
+        '204':
+          description: if house was removed
         '400':
-          description: Invalid username supplied
+          description: if params are invalid
+  /houses:
+    get:
+      tags:
+        - Houses
+      description: List all houses of the community given a community id
+      operationId: listAllHouses
+      parameters:
+        - in: query
+          name: pageable
+          required: false
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: if community exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetHouseDetailsResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetHouseDetailsResponse'
+  /houses/{houseId}:
+    get:
+      tags:
+        - Houses
+      description: "Get house detail by a given ID"
+      operationId: getHouseDetails
+      parameters:
+        - in: path
+          name: houseId
+          schema:
+            type: string
+          required: true
+          description: ID of the house to get
+      responses:
+        '200':
+          description: "if house present"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetHouseDetailsResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/GetHouseDetailsResponse'
         '404':
-          description: User not found
-externalDocs:
-  description: Find out more about Swagger
-  url: 'http://swagger.io'
+          description: "if params are invalid"
+  /houses/{houseId}/members:
+    get:
+      tags:
+        - Houses
+      description: "List all members of the house given a house id"
+      operationId: listAllMembersOfHouse
+      parameters:
+        - in: path
+          name: houseId
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: pageable
+          required: false
+          schema:
+            $ref: '#/components/schemas/Pageable'
+      responses:
+        '200':
+          description: "if house present"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListHouseMembersResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ListHouseMembersResponse'
+        '404':
+          description: "if params are invalid"
+    post:
+      tags:
+        - Houses
+      description: "Add new members to the house given a house id. Responds with member id which were added"
+      operationId: addHouseMembers
+      parameters:
+        - in: path
+          name: houseId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        description: AddHouseMemberRequest aggregate fields
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddHouseMemberRequest'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/AddHouseMemberRequest'
+      responses:
+        '201':
+          description: If members were added to house
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddHouseMemberResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/AddHouseMemberResponse'
+        '404':
+          description: If parameters are invalid
+  /houses/{houseId}/members/{memberId}:
+    delete:
+      tags:
+        - Houses
+      description: "Deletion of member associated with a house"
+      operationId: deleteHouseMember
+      parameters:
+        - in: path
+          name: houseId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: memberId
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: If house member was removed from house
+        '400':
+          description: if params are invalid
+
+
 components:
   schemas:
-    Order:
-      x-swagger-router-model: io.swagger.petstore.model.Order
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        petId:
-          type: integer
-          format: int64
-          example: 198772
-        quantity:
-          type: integer
-          format: int32
-          example: 7
-        shipDate:
-          type: string
-          format: date-time
-        status:
-          type: string
-          description: Order Status
-          enum:
-            - placed
-            - approved
-            - delivered
-          example: approved
-        complete:
-          type: boolean
-      xml:
-        name: order
+    CreateUserRequest:
       type: object
-    Customer:
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 100000
-        username:
-          type: string
-          example: fehguy
-        address:
-          type: array
-          items:
-            $ref: '#/components/schemas/Address'
-          xml:
-            wrapped: true
-            name: addresses
-      xml:
-        name: customer
-      type: object
-    Address:
-      properties:
-        street:
-          type: string
-          example: 437 Lytton
-        city:
-          type: string
-          example: Palo Alto
-        state:
-          type: string
-          example: CA
-        zip:
-          type: string
-          example: 94301
-      xml:
-        name: address
-      type: object
-    Category:
-      x-swagger-router-model: io.swagger.petstore.model.Category
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 1
-        name:
-          type: string
-          example: Dogs
-      xml:
-        name: category
-      type: object
-    User:
-      x-swagger-router-model: io.swagger.petstore.model.User
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        username:
-          type: string
-          example: theUser
-        firstName:
-          type: string
-          example: John
-        lastName:
-          type: string
-          example: James
-        email:
-          type: string
-          example: john@email.com
-        password:
-          type: string
-          example: 12345
-        phone:
-          type: string
-          example: 12345
-        userStatus:
-          type: integer
-          format: int32
-          example: 1
-          description: User Status
-      xml:
-        name: user
-      type: object
-    Tag:
-      x-swagger-router-model: io.swagger.petstore.model.Tag
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-      xml:
-        name: tag
-      type: object
-    Pet:
-      x-swagger-router-model: io.swagger.petstore.model.Pet
       required:
         - name
-        - photoUrls
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 80
+    CreateUserResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+    GetUserDetailsResponse:
+      type: object
+      required:
+        - users
+      properties:
+        users:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/GetUserDetailsResponseUser'
+    GetUserDetailsResponseUser:
+      type: object
+      properties:
+        userId:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        communityIds:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+    Pageable:
+      description: Pageable query parameters
+      type: object
+      properties:
+        page:
+          type: integer
+        size:
+          type: integer
+    CreateCommunityRequest:
+      type: object
+      required:
+        - name
+        - district
+      properties:
+        name:
+          type: string
+        district:
+          type: string
+    CreateCommunityResponse:
+      type: object
+      required:
+        - communityId
+      properties:
+        communityId:
+          type: string
+    GetCommunityDetailsResponse:
+      type: object
+      required:
+        - communities
+      properties:
+        communities:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/GetCommunityDetailsResponseCommunity'
+    GetCommunityDetailsResponseCommunity:
+      type: object
+      properties:
+        communityId:
+          type: string
+        name:
+          type: string
+        district:
+          type: string
+    ListCommunityAdminsResponse:
+      type: object
+      required:
+        - admins
+      properties:
+        admins:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/ListCommunityAdminsResponseCommunityAdmin'
+    ListCommunityAdminsResponseCommunityAdmin:
+      type: object
+      properties:
+        adminId:
+          type: string
+    AddCommunityAdminRequest:
+      type: object
+      required:
+        - admins
+      properties:
+        admins:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+    AddCommunityAdminResponse:
+      type: object
+      required:
+        - admins
+      properties:
+        admins:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+    GetHouseDetailsResponse:
+      type: object
+      required:
+        - houses
+      properties:
+        houses:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/GetHouseDetailsResponseCommunityHouse'
+    GetHouseDetailsResponseCommunityHouse:
+      type: object
+      properties:
+        houseId:
+          type: string
+        name:
+          type: string
+    AddCommunityHouseRequest:
+      type: object
+      required:
+        - houses
+      properties:
+        houses:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/CommunityHouseName'
+    CommunityHouseName:
+      type: object
+      properties:
+        name:
+          type: string
+    AddCommunityHouseResponse:
+      type: object
+      required:
+        - houses
+      properties:
+        houses:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+    HouseMember:
+      type: object
+      required:
+        - memberId
+        - name
+      properties:
+        memberId:
+          type: string
+        name:
+          type: string
+    ListHouseMembersResponse:
+      type: object
+      required:
+        - members
+      properties:
+        members:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/HouseMember'
+    HouseMemberDto:
+      type: object
+      required:
+        - memberId
+        - name
       properties:
         id:
           type: integer
           format: int64
-          example: 10
+        memberId:
+          type: string
         name:
           type: string
-          example: doggie
-        category:
-          $ref: '#/components/schemas/Category'
-        photoUrls:
-          type: array
-          xml:
-            wrapped: true
-          items:
-            type: string
-            xml:
-              name: photoUrl
-        tags:
-          type: array
-          xml:
-            wrapped: true
-          items:
-            $ref: '#/components/schemas/Tag'
-            xml:
-              name: tag
-        status:
-          type: string
-          description: pet status in the store
-          enum:
-            - available
-            - pending
-            - sold
-      xml:
-        name: pet
+    AddHouseMemberRequest:
       type: object
-    ApiResponse:
+      required:
+        - members
       properties:
-        code:
-          type: integer
-          format: int32
-        type:
-          type: string
-        message:
-          type: string
-      xml:
-        name: '##default'
+        members:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/HouseMemberDto'
+    AddHouseMemberResponse:
       type: object
-  requestBodies:
-    Pet:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Pet'
-        application/xml:
-          schema:
-            $ref: '#/components/schemas/Pet'
-      description: Pet object that needs to be added to the store
-    UserArray:
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/User'
-      description: List of user object
-  securitySchemes:
-    petstore_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: 'https://petstore.swagger.io/oauth/authorize'
-          scopes:
-            'write:pets': modify pets in your account
-            'read:pets': read your pets
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header
+      required:
+        - members
+      properties:
+        members:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/HouseMember'
